@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"halo.rsky.eu.org","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.13.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"width":300},"copycode":{"enable":true,"style":"mac","show_result":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="计算机网络技术毕业，个人很注重网络及信息安全，看过一篇关于有规律的管理密码的文章，自己也就建了一套类似规则；但是几年前爆发的密码泄露问题还是查询到密码泄露，就注册了 LastPass 进行密码管理：日常密码继续按规律设置、更新，不常登录的使用 LastPass 计算随机密码并添加站点。一种用着还算顺利，不过 LastPass 浏览器插件时不时提示无法连上服务器，应该是服务器在国外的原因；">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用 bitwarden_rs 搭建自托管的密码服务器">
+<meta property="og:url" content="https://halo.rsky.eu.org/post/fcad.html">
+<meta property="og:site_name" content="大漠孤烟">
+<meta property="og:description" content="计算机网络技术毕业，个人很注重网络及信息安全，看过一篇关于有规律的管理密码的文章，自己也就建了一套类似规则；但是几年前爆发的密码泄露问题还是查询到密码泄露，就注册了 LastPass 进行密码管理：日常密码继续按规律设置、更新，不常登录的使用 LastPass 计算随机密码并添加站点。一种用着还算顺利，不过 LastPass 浏览器插件时不时提示无法连上服务器，应该是服务器在国外的原因；">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.loli.net/2019/12/12/iKJjaMpeOFkLD6s.png">
+<meta property="og:image" content="https://i.loli.net/2019/12/12/nGey5PXOErDphqv.png">
+<meta property="og:image" content="https://i.loli.net/2019/12/12/ErTowNnD29b8yxM.png">
+<meta property="article:published_time" content="2021-10-17T14:22:36.000Z">
+<meta property="article:modified_time" content="2021-10-20T08:00:36.000Z">
+<meta property="article:author" content="村哥">
+<meta property="article:tag" content="bitwarden">
+<meta property="article:tag" content="密码服务器">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2019/12/12/iKJjaMpeOFkLD6s.png">
+
+
+<link rel="canonical" href="https://halo.rsky.eu.org/post/fcad.html">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://halo.rsky.eu.org/post/fcad.html","path":"post/fcad.html","title":"使用 bitwarden_rs 搭建自托管的密码服务器"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>使用 bitwarden_rs 搭建自托管的密码服务器 | 大漠孤烟</title>
+  
+
+
+
+
+
+<link rel="dns-prefetch" href="https://halo-waline.vercel.app/"><!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/love.js"></script>
+<!-- 文章加密 -->
+<script>
+    (function(){
+        if(''){
+            if (prompt('请输入文章密码') !== ''){
+                alert('密码错误！');
+                history.back();
+            }
+        }
+    })();
+</script>
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="大漠孤烟" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">大漠孤烟</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">打工仔</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Docker-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="nav-number">1.</span> <span class="nav-text">Docker 环境搭建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E8%A6%81%E6%B1%82"><span class="nav-number">1.1.</span> <span class="nav-text">安装要求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%B8%E8%BD%BD%E6%97%A7%E7%89%88%E6%9C%AC"><span class="nav-number">1.2.</span> <span class="nav-text">卸载旧版本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-Docker"><span class="nav-number">1.3.</span> <span class="nav-text">安装 Docker</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E6%89%80%E9%9C%80%E4%BE%9D%E8%B5%96%E5%8C%85"><span class="nav-number">1.3.1.</span> <span class="nav-text">安装所需依赖包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-Docker-CE-%E5%B9%B6%E8%AE%BE%E7%BD%AE%E5%BC%80%E6%9C%BA%E5%90%AF%E5%8A%A8"><span class="nav-number">1.3.2.</span> <span class="nav-text">安装 Docker-CE 并设置开机启动</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E5%86%85%E6%A0%B8%E5%8F%82%E6%95%B0"><span class="nav-number">1.4.</span> <span class="nav-text">添加内核参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">1.5.</span> <span class="nav-text">参考文档</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%83%A8%E7%BD%B2-Bitwarden-rs"><span class="nav-number">2.</span> <span class="nav-text">部署 Bitwarden_rs</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BF%AB%E9%80%9F%E9%83%A8%E7%BD%B2"><span class="nav-number">2.1.</span> <span class="nav-text">快速部署</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%98%E6%96%B9%E6%8F%90%E4%BE%9B"><span class="nav-number">2.1.1.</span> <span class="nav-text">官方提供</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E9%83%A8%E7%BD%B2"><span class="nav-number">2.2.</span> <span class="nav-text">自定义部署</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%B9%E5%99%A8%E6%93%8D%E4%BD%9C%E5%91%BD%E4%BB%A4"><span class="nav-number">2.3.</span> <span class="nav-text">容器操作命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%87%E7%BA%A7-Bitwarden-%E9%95%9C%E5%83%8F"><span class="nav-number">2.4.</span> <span class="nav-text">升级 Bitwarden 镜像</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8A%E8%BF%B0%E9%83%BD%E5%A4%AA%E7%B9%81%E6%9D%82%EF%BC%8C%E4%BD%BF%E7%94%A8-Docker-Compose-%E9%83%A8%E7%BD%B2"><span class="nav-number">2.5.</span> <span class="nav-text">上述都太繁杂，使用 Docker Compose 部署</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#nginx-%E9%85%8D%E7%BD%AE"><span class="nav-number">2.6.</span> <span class="nav-text">nginx 配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E5%BC%80%E6%9C%BA%E5%90%AF%E5%8A%A8"><span class="nav-number">2.7.</span> <span class="nav-text">设置开机启动</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%80%E5%A7%8B%E4%BD%BF%E7%94%A8"><span class="nav-number">3.</span> <span class="nav-text">开始使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E8%BF%81%E7%A7%BB"><span class="nav-number">3.1.</span> <span class="nav-text">数据迁移</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E4%BD%BF%E7%94%A8"><span class="nav-number">3.2.</span> <span class="nav-text">客户端使用</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="村哥"
+      src="https://p.sda1.dev/8/c7fa9e05b1af70bfd08a0abe9b077947/yNID7wM5op.png">
+  <p class="site-author-name" itemprop="name">村哥</p>
+  <div class="site-description" itemprop="description">人生苦短，赶紧赚钱</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">40</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/chwl66" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;chwl66" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:teamy2233@gmail.com" title="E-Mail → mailto:teamy2233@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://instagram.com/baiqia1" title="Instagram → https:&#x2F;&#x2F;instagram.com&#x2F;baiqia1" rel="noopener" target="_blank"><i class="fab fa-instagram fa-fw"></i>Instagram</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://halo.rsky.eu.org/post/fcad.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://p.sda1.dev/8/c7fa9e05b1af70bfd08a0abe9b077947/yNID7wM5op.png">
+      <meta itemprop="name" content="村哥">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="大漠孤烟">
+      <meta itemprop="description" content="人生苦短，赶紧赚钱">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="使用 bitwarden_rs 搭建自托管的密码服务器 | 大漠孤烟">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用 bitwarden_rs 搭建自托管的密码服务器
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2021-10-17 22:22:36" itemprop="dateCreated datePublished" datetime="2021-10-17T22:22:36+08:00">2021-10-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2021-10-20 16:00:36" itemprop="dateModified" datetime="2021-10-20T16:00:36+08:00">2021-10-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Hexo/" itemprop="url" rel="index"><span itemprop="name">Hexo</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/post/fcad.html#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/post/fcad.html" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>5k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>5 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>计算机网络技术毕业，个人很注重网络及信息安全，看过一篇关于有规律的管理密码的文章，自己也就建了一套类似规则；<br>但是几年前爆发的密码泄露问题还是查询到密码泄露，就注册了 LastPass 进行密码管理：日常密码继续按规律设置、更新，不常登录的使用 LastPass 计算随机密码并添加站点。<br>一种用着还算顺利，不过 LastPass 浏览器插件时不时提示无法连上服务器，应该是服务器在国外的原因；</p>
+<span id="more"></span>
+<p>然后无意中看到 <a target="_blank" rel="noopener" href="https://bitwarden.com/#download">Bitwarden</a> 及其衍生版本 <a target="_blank" rel="noopener" href="https://github.com/dani-garcia/bitwarden_rs">bitwarden_rs</a>，刚好<a target="_blank" rel="noopener" href="https://yuwei.cc/bwh-vps.html">搬瓦工</a>就搭了个梯子相当于闲置，就打算也自建一个试试效果。</p>
+<h2 id="Docker-环境搭建"><a href="#Docker-环境搭建" class="headerlink" title="Docker 环境搭建"></a>Docker 环境搭建</h2><h3 id="安装要求"><a href="#安装要求" class="headerlink" title="安装要求"></a>安装要求</h3><p>CentOS 7（64-bit），内核版本不能低于3.10；</p>
+<h3 id="卸载旧版本"><a href="#卸载旧版本" class="headerlink" title="卸载旧版本"></a>卸载旧版本</h3><p>较旧版本的Docker被称为docker或docker-engine。如果已安装这些，请卸载它们以及相关的依赖项。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">yum remove docker \</span><br><span class="line">  docker-client \</span><br><span class="line">  docker-client-latest \</span><br><span class="line">  docker-common \</span><br><span class="line">  docker-latest \</span><br><span class="line">  docker-latest-logrotate \</span><br><span class="line">  docker-logrotate \</span><br><span class="line">  docker-engine</span><br></pre></td></tr></table></figure>
+
+<h3 id="安装-Docker"><a href="#安装-Docker" class="headerlink" title="安装 Docker"></a>安装 Docker</h3><p>使用 yum 安装</p>
+<h4 id="安装所需依赖包"><a href="#安装所需依赖包" class="headerlink" title="安装所需依赖包"></a>安装所需依赖包</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">yum install -y yum-utils device-mapper-persistent-data lvm2</span><br><span class="line"># 使用国内源（阿里云）</span><br><span class="line">yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo</span><br><span class="line"># 使用官方源</span><br><span class="line">yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo</span><br><span class="line"># 如果需要测试版本的 Docker CE 请使用以下命令</span><br><span class="line">yum-config-manager --enable docker-ce-test</span><br><span class="line"># 如果需要每日构建版本的 Docker CE 请使用以下命令</span><br><span class="line">yum-config-manager --enable docker-ce-nightly</span><br></pre></td></tr></table></figure>
+
+<h4 id="安装-Docker-CE-并设置开机启动"><a href="#安装-Docker-CE-并设置开机启动" class="headerlink" title="安装 Docker-CE 并设置开机启动"></a>安装 Docker-CE 并设置开机启动</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">yum makecache # 更新 yum 缓存</span><br><span class="line">yum -y install docker-ce --nobest # 安装 Docker-CE</span><br><span class="line">systemctl enable docker # 设置开机自启</span><br><span class="line">systemctl start docker # 启动 Docker-CE</span><br></pre></td></tr></table></figure>
+
+<p>使用脚本自动安装<br>在测试或开发环境中 Docker 官方为了简化安装流程，提供了一套便捷的安装脚本，CentOS 系统上可以使用这套脚本安装：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">curl -fsSL get.docker.com -o get-docker.sh</span><br><span class="line">sh get-docker.sh --mirror Aliyun</span><br></pre></td></tr></table></figure>
+
+<h3 id="添加内核参数"><a href="#添加内核参数" class="headerlink" title="添加内核参数"></a>添加内核参数</h3><p>如果在 CentOS 使用 Docker CE 看到下面的这些警告信息：</p>
+<blockquote>
+<p>WARNING: bridge-nf-call-iptables is disabled<br>WARNING: bridge-nf-call-ip6tables is disabled</p>
+</blockquote>
+<p>请添加内核配置参数以启用这些功能。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">tee -a /etc/sysctl.conf &lt;&lt;-EOF</span><br><span class="line">net.bridge.bridge-nf-call-ip6tables = 1</span><br><span class="line">net.bridge.bridge-nf-call-iptables = 1</span><br><span class="line">EOF</span><br><span class="line">sysctl -p # 重新加载 sysctl.conf</span><br></pre></td></tr></table></figure>
+
+<h3 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h3><table>
+<thead>
+<tr>
+<th><a target="_blank" rel="noopener" href="https://www.runoob.com/docker/centos-docker-install.html">菜鸟教程</a></th>
+<th><a target="_blank" rel="noopener" href="https://yeasy.gitbooks.io/docker_practice/content/">从入门到实践</a></th>
+<th><a target="_blank" rel="noopener" href="https://docs.docker.com/install/linux/docker-ce/centos/">官方文档</a></th>
+<th><a target="_blank" rel="noopener" href="https://yq.aliyun.com/articles/110806">阿里云镜像源站</a></th>
+<th><a target="_blank" rel="noopener" href="https://www.cnblogs.com/wushuaishuai/p/9984228.html#_label0">国内仓库和镜像</a></th>
+</tr>
+</thead>
+<tbody><tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h2 id="部署-Bitwarden-rs"><a href="#部署-Bitwarden-rs" class="headerlink" title="部署 Bitwarden_rs"></a>部署 Bitwarden_rs</h2><h3 id="快速部署"><a href="#快速部署" class="headerlink" title="快速部署"></a>快速部署</h3><p>由于bitwarden改名，所以库地址有所更改！</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker pull vaultwarden/server:latest</span><br><span class="line">docker run -d --name bitwarden -v /bw-data/:/data/ -p 6666:80 bitwardenrs/server:latest</span><br></pre></td></tr></table></figure>
+
+<h4 id="官方提供"><a href="#官方提供" class="headerlink" title="官方提供"></a>官方提供</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">curl -Lso bitwarden.sh https://go.btwrdn.co/bw-sh \</span><br><span class="line">  &amp;&amp; chmod +x bitwarden.sh</span><br><span class="line">./bitwarden.sh install</span><br><span class="line">./bitwarden.sh start</span><br></pre></td></tr></table></figure>
+
+<h3 id="自定义部署"><a href="#自定义部署" class="headerlink" title="自定义部署"></a>自定义部署</h3><p>自定义一些参数，加入 HTTPS 支持等…</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"># 拉取 bitwarden_rs 镜像</span><br><span class="line">docker pull vaultwarden/server:latest</span><br><span class="line"># 生成一个 admin 用户管理页面的 token</span><br><span class="line">openssl rand -base64 48</span><br><span class="line"># 生成 ssl 证书，以启用 https，推荐使用 acme.sh 免费申请及自动续签</span><br><span class="line"></span><br><span class="line"># 运行 bitwarden_rs 容器</span><br><span class="line">docker run -d --name bitwarden \</span><br><span class="line">    -e SIGNUPS_ALLOWED=false \</span><br><span class="line">    -e INVITATIONS_ALLOWED=false \</span><br><span class="line">    -e ADMIN_TOKEN=step2_generated_token \</span><br><span class="line">    -e ROCKET_TLS=&#x27;&#123;certs=&quot;/data/v2ray.crt&quot;,key=&quot;/data/v2ray.key&quot;&#125;&#x27; \</span><br><span class="line">    -e DOMAIN=https://bwh.vioe.cc/ \</span><br><span class="line">    -e LOG_FILE=/path/to/log \</span><br><span class="line">    -e LOG_LEVEL=warn -e EXTENDED_LOGGING=true \</span><br><span class="line">    -e DATA_FOLDER=/path/to/data/folder \</span><br><span class="line">    -p 443:80 \</span><br><span class="line">    -v /path/to/host/ssl/:/path/to/docker/ssl/</span><br><span class="line">    -v /path/to/host/data/folder:/path/to/docker/data/folder \</span><br><span class="line">    vaultwarden/server:latest</span><br></pre></td></tr></table></figure>
+
+<p>参数解释：</p>
+<blockquote>
+<p>SIGNUP_ALLOWED：是否允许注册<br>INVITATIONS_ALLOWED：是否允许组织邀请注册<br>ADMIN_TOKEN：用户管理界面 (&#x2F;admin)，可用于删除用户及邀请用户注册<br>ROCKET_TLS：ssl 证书信息，同时需要配置 -v &#x2F;path&#x2F;to&#x2F;host&#x2F;ssl&#x2F;:&#x2F;path&#x2F;to&#x2F;docker&#x2F;ssl&#x2F; 卷，前者为宿主机 ssl 证书的位置，后者为容器证书位置<br>DOMAIN：域名<br>LOG_FILE、LOG_LEVEL、EXTENDED_LOGGING：日志保存文件路径以及日志等级定义<br>DATA_FOLDER：docker 容器数据保存文件夹（默认为 &#x2F;data），除了定义这个文件夹之外，还可以定义附件、图标缓存、数据库等参数<br>DATABASE_URL：数据库路径<br>ATTACHMENT_FOLDER：附件路径<br>ICON_CACHE_FOLDER：图标缓存路径</p>
+</blockquote>
+<p>更多参数可参考<a target="_blank" rel="noopener" href="https://github.com/dani-garcia/bitwarden_rs/wiki">官方 Wiki</a></p>
+<h3 id="容器操作命令"><a href="#容器操作命令" class="headerlink" title="容器操作命令"></a>容器操作命令</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># $name 为 docker run 中定义的 name</span><br><span class="line"># 启动容器</span><br><span class="line">docker start $name</span><br><span class="line"># 停止容器</span><br><span class="line">docker stop $name</span><br><span class="line"># 删除容器</span><br><span class="line">docker rm $name</span><br><span class="line"># 查看运行容器</span><br><span class="line">docker ps -as</span><br></pre></td></tr></table></figure>
+
+<h3 id="升级-Bitwarden-镜像"><a href="#升级-Bitwarden-镜像" class="headerlink" title="升级 Bitwarden 镜像"></a>升级 Bitwarden 镜像</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># 重新拉取镜像</span><br><span class="line">docker pull vaultwarden/server:latest</span><br><span class="line"># 停止、删除原容器</span><br><span class="line">docker stop bitwarden</span><br><span class="line">docker rm bitwarden</span><br><span class="line"># 重新运行 docker run 命令</span><br><span class="line"># 查看镜像文件</span><br><span class="line">docker image ls</span><br><span class="line"># 删除原镜像文件, $ID 在 step4 中可以看到</span><br><span class="line">docker image rm $ID</span><br></pre></td></tr></table></figure>
+
+<h3 id="上述都太繁杂，使用-Docker-Compose-部署"><a href="#上述都太繁杂，使用-Docker-Compose-部署" class="headerlink" title="上述都太繁杂，使用 Docker Compose 部署"></a>上述都太繁杂，使用 Docker Compose 部署</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">curl -L https://github.com/docker/compose/releases/download/1.25.0/docker-compose-uname -s-uname -m -o /usr/local/bin/docker-compose</span><br><span class="line">chmod +x /usr/local/bin/docker-compose</span><br></pre></td></tr></table></figure>
+
+<p>自行选择安装目录用于存储数据，如安装到 &#x2F;home&#x2F;bitwarden<br><code>cd /home &amp;&amp; mkdir bitwarden &amp;&amp; cd bitwarden</code><br>准备一个配置文件 config.env<br><code>cat &gt;&gt; config.env &lt;&lt; EOF</code><br>写入：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">SIGNUPS_ALLOWED=true</span><br><span class="line">DOMAIN=https://yourdomain.com</span><br><span class="line">DATABASE_URL=/data/bitwarden.db</span><br><span class="line">ROCKET_WORKERS=10</span><br><span class="line">WEB_VAULT_ENABLED=true</span><br><span class="line">ADMIN_TOKEN=xxxxxx</span><br><span class="line">WEBSOCKET_ENABLED=true</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<p>准备服务描述文件 docker-compose.yml：<br><code>cat &gt;&gt; docker-compose.yml &lt;&lt; EOF</code><br>写入：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">version: &#x27;3&#x27;</span><br><span class="line"></span><br><span class="line">services:</span><br><span class="line">  bitwarden:</span><br><span class="line">    image: vaultwarden/server:latest</span><br><span class="line">    container_name: bitwarden</span><br><span class="line">    restart: always</span><br><span class="line">    volumes:</span><br><span class="line">      - ./data:/data</span><br><span class="line">    env_file:</span><br><span class="line">      - config.env</span><br><span class="line">    ports:</span><br><span class="line">      - &quot;6666:80&quot;</span><br><span class="line">      - &quot;8888:3012&quot;</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<p>文件说明：</p>
+<blockquote>
+<p>bitwarden 现在是唯一一个服务；<br>image: vaultwarden&#x2F;server:latest 指定使用 Docker Hub 的 vaultwarden&#x2F;server 最新镜像；<br>volumes 中指定将容器内的 &#x2F;data 目录挂载到宿主机的当前目录下的 data 目录，这样你可以在宿主机上执行数据库的备份操作；<br>ports 指定将容器内的 80 端口映射到了宿主机的 6666 端口；</p>
+</blockquote>
+<p>以后对 bitwarden 服务做的所有操作，都需要预先进入这两个配置文件所在的目录内。<br>拉取镜像：<code>docker-compose up -d</code></p>
+<h3 id="nginx-配置"><a href="#nginx-配置" class="headerlink" title="nginx 配置"></a>nginx 配置</h3><p>请查看：<a target="_blank" rel="noopener" href="https://github.com/dani-garcia/bitwarden_rs/wiki/Proxy-examples">https://github.com/dani-garcia/bitwarden_rs/wiki/Proxy-examples</a></p>
+<h3 id="设置开机启动"><a href="#设置开机启动" class="headerlink" title="设置开机启动"></a>设置开机启动</h3><p>编辑 rc.local文件：<code>vi /etc/rc.d/rc.local</code>，在最后加上：</p>
+<blockquote>
+<p>&#x2F;usr&#x2F;local&#x2F;bin&#x2F;docker-compose -f<br>&#x2F;usr&#x2F;local&#x2F;bitwarden&#x2F;docker-compose.yml up -d</p>
+</blockquote>
+<p>bitwarden 搭建完成，访问 <a target="_blank" rel="noopener" href="https://你的域名/admin">https:&#x2F;&#x2F;你的域名&#x2F;admin</a> 输入上述配置文件的管理密码，可以进去管理面板；修改配置，需要重新启动容器以便生效：<code>docker-compose down &amp;&amp; docker-compose up -d</code></p>
+<h2 id="开始使用"><a href="#开始使用" class="headerlink" title="开始使用"></a>开始使用</h2><h3 id="数据迁移"><a href="#数据迁移" class="headerlink" title="数据迁移"></a>数据迁移</h3><p>网页访问搭建号的账号注册账号（如果是个人使用注册完以后将上述 <code>SIGNUPS_ALLOWED=true</code> 字段修改为 <code>SIGNUPS_ALLOWED=false</code> 然后重启容器），于此同时登录 LastPass 导出密码（虽说需要输入主密码，但是导出的文件里的密码居然是明文的）：</p>
+<p><img src="https://i.loli.net/2019/12/12/iKJjaMpeOFkLD6s.png" alt="img"></p>
+<p>切回 Bitwarden 页面，点击<code>工具</code>-&gt;<code>导入数据</code>；选择 LassPass，再见上述步骤得到的内容直接复制粘贴到第二个红框中或者选择你得到的 csv 文件。</p>
+<p><img src="https://i.loli.net/2019/12/12/nGey5PXOErDphqv.png" alt="img"></p>
+<h3 id="客户端使用"><a href="#客户端使用" class="headerlink" title="客户端使用"></a>客户端使用</h3><p>市面商所有平台都可以使用，详情见官方<a target="_blank" rel="noopener" href="https://bitwarden.com/#download">下载页面</a><br>PS.Chromium 版的 Microsoft Edge 扩展链接没有列出：<a target="_blank" rel="noopener" href="https://microsoftedge.microsoft.com/insider-addons/detail/jbkfoedolllekgbhcbcoahefnbanhhlh">Microsoft Store</a>，装好以后点击设置，输入自定义的域名，其他选项按实际情况填写。</p>
+<p><img src="https://i.loli.net/2019/12/12/ErTowNnD29b8yxM.png" alt="img"></p>
+<p>所有客户端设置界面相同，另外中文界面好评，先用一段时间；如果没有问题，准备将 LastPass 账号彻底删掉！</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <a target="_blank" class="social-link" href="https://t.me/chwl_h">
+            <span class="icon">
+              <i class="fab fa-telegram"></i>
+            </span>
+
+            <span class="label">Telegram</span>
+          </a>
+      </div>
+
+      <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/bitwarden/" rel="tag"><i class="fa fa-tag"></i> bitwarden</a>
+              <a href="/tags/%E5%AF%86%E7%A0%81%E6%9C%8D%E5%8A%A1%E5%99%A8/" rel="tag"><i class="fa fa-tag"></i> 密码服务器</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/post/9429.html" rel="prev" title="使用Picgo对接Hidove图床">
+                  <i class="fa fa-chevron-left"></i> 使用Picgo对接Hidove图床
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/post/undefined.html" rel="next" title="Telegram Bot 控制 Aria2 下载并自动上传到 Google Drive、OneDrive">
+                  Telegram Bot 控制 Aria2 下载并自动上传到 Google Drive、OneDrive <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="waline"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2021 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-balance-scale"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">村哥</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">21k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">19 分钟</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div><div>
+<!--添加网站运行时间-->
+<span>小破站已经在风雨中度过了</span>
+<span id="timeDate">载入天数...</span>
+<span id="times">载入时分秒...</span>
+<script>
+    function createtime() {
+        const startTime = '10/17/2021 00:12:55',
+            start = new Date(startTime)
+        let mill = new Date() - start,
+            seconds = Math.floor(mill / 1000),
+            mins = Math.floor(seconds / 60),
+            hours = Math.floor(mins / 60),
+            days = Math.floor(hours / 24)
+        const time = {
+            seconds: seconds - mins * 60,
+            mins: mins - hours * 60,
+            hours: hours - days * 24,
+        }
+        for (const k in time) {
+            time[k] = `${time[k]}`.padStart(2, '0')
+        }
+        document.getElementById("timeDate").innerHTML = ` ${days} 天`
+        document.getElementById("times").innerHTML = ` ${time.hours} 小时 ${time.mins} 分 ${time.seconds} 秒`
+    }
+    setInterval(createtime, 500)
+</script>
+</div>
+
+
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-cn","enable":true,"serverURL":"https://halo-waline.vercel.app/","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":true,"pageview":false,"placeholder":"来都来了，留下点东西再走吧","avatar":"mm","meta":["nick","mail","link"],"pageSize":10,"visitor":false,"comment_count":true,"requiredMeta":[],"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","el":"#waline","comment":true,"path":"/post/fcad.html"}</script>
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.waline.el).then(() =>
+    NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
+  ).then(() => 
+    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+  );
+});
+</script>
+
+</body>
+</html>

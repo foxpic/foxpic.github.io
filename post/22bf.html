@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"halo.rsky.eu.org","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.13.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"width":300},"copycode":{"enable":true,"style":"mac","show_result":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="纠结了很久很久才发这一篇帖子，本来很早就想发了，一直拖到了现在，arpl是巴西的一位大神出的编译系统，让黑群晖DSM7.X引导的编译和安装变得非常简单 此文章部分内容引用Gxnas大神，以获取转载许可...">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[Windows] 安装黑群晖不求人，arpl在线编译安装群晖教程">
+<meta property="og:url" content="https://halo.rsky.eu.org/post/22bf.html">
+<meta property="og:site_name" content="大漠孤烟">
+<meta property="og:description" content="纠结了很久很久才发这一篇帖子，本来很早就想发了，一直拖到了现在，arpl是巴西的一位大神出的编译系统，让黑群晖DSM7.X引导的编译和安装变得非常简单 此文章部分内容引用Gxnas大神，以获取转载许可...">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3c8ce3a23.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3cadc7215.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3cba7af91.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3ce9eb3c2.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3cfb3276a.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3d09df105.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3d19010b6.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3d22ae4d5.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3d387a2ff.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3d4229d75.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3d4d21804.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3d5837e16.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3d63e2b55.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3d6e0e0cd.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3d7c3c161.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3d9b631a0.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3dad2f48c.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3dc28c73d.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3dd0f37c6.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3ddcadd1a.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3ded912f8.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3dfc3ec10.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3e0e1e01c.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3e1d88f06.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3e3a2addb.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3e4ba75cc.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3e5b3f684.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3e6b939fc.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3e7761fa1.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3e8662115.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3b3202006.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3af9370de.png">
+<meta property="og:image" content="https://www.imglt.org/i/2022/10/29/635d3eaa4708d.png">
+<meta property="article:published_time" content="2022-11-03T13:07:34.000Z">
+<meta property="article:modified_time" content="2022-11-03T13:07:35.000Z">
+<meta property="article:author" content="村哥">
+<meta property="article:tag" content="黑群晖">
+<meta property="article:tag" content="在线编译">
+<meta property="article:tag" content="DSM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.imglt.org/i/2022/10/29/635d3c8ce3a23.png">
+
+
+<link rel="canonical" href="https://halo.rsky.eu.org/post/22bf.html">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://halo.rsky.eu.org/post/22bf.html","path":"post/22bf.html","title":"[Windows] 安装黑群晖不求人，arpl在线编译安装群晖教程"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>[Windows] 安装黑群晖不求人，arpl在线编译安装群晖教程 | 大漠孤烟</title>
+  
+
+
+
+
+
+<link rel="dns-prefetch" href="https://halo-waline.vercel.app/"><!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/love.js"></script>
+<!-- 文章加密 -->
+<script>
+    (function(){
+        if(''){
+            if (prompt('请输入文章密码') !== ''){
+                alert('密码错误！');
+                history.back();
+            }
+        }
+    })();
+</script>
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="大漠孤烟" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">大漠孤烟</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">打工仔</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-overview-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="村哥"
+      src="https://p.sda1.dev/8/c7fa9e05b1af70bfd08a0abe9b077947/yNID7wM5op.png">
+  <p class="site-author-name" itemprop="name">村哥</p>
+  <div class="site-description" itemprop="description">人生苦短，赶紧赚钱</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">40</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/chwl66" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;chwl66" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:teamy2233@gmail.com" title="E-Mail → mailto:teamy2233@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://instagram.com/baiqia1" title="Instagram → https:&#x2F;&#x2F;instagram.com&#x2F;baiqia1" rel="noopener" target="_blank"><i class="fab fa-instagram fa-fw"></i>Instagram</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://halo.rsky.eu.org/post/22bf.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://p.sda1.dev/8/c7fa9e05b1af70bfd08a0abe9b077947/yNID7wM5op.png">
+      <meta itemprop="name" content="村哥">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="大漠孤烟">
+      <meta itemprop="description" content="人生苦短，赶紧赚钱">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="[Windows] 安装黑群晖不求人，arpl在线编译安装群晖教程 | 大漠孤烟">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [Windows] 安装黑群晖不求人，arpl在线编译安装群晖教程
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2022-11-03 21:07:34 / 修改时间：21:07:35" itemprop="dateCreated datePublished" datetime="2022-11-03T21:07:34+08:00">2022-11-03</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/MJJ/" itemprop="url" rel="index"><span itemprop="name">MJJ</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/post/22bf.html#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/post/22bf.html" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.4k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><strong>纠结了很久很久才发这一篇帖子，本来很早就想发了，一直拖到了现在，arpl是巴西的一位大神出的编译系统，让黑群晖DSM7.X引导的编译和安装变得非常简单</strong></p>
+<p><strong>此文章部分内容引用Gxnas大神，以获取转载许可。</strong><br><strong>【编译前的准备工作】</strong><br><strong>由于需要在NAS的机器上进行引导的编译，请事先准一下：</strong><br><strong>※ 如果你决定使用物理机安装群晖系统的，那么需要把机器装好，包括键盘、鼠标、显示器、硬盘、网线等等，如果还有其他外设（比如：额外添加的网卡、扩展卡、阵列卡等）要装起来，让所有的硬件处于可以正常工作的状态，编译系统会自动检测你使用的硬件并且自动加载驱动进行编译；</strong></p>
+<p><strong>※ 如果你决定使用<a target="_blank" rel="noopener" href="https://www.52pojie.cn/thread-661779-1-1.html">虚拟机</a>安装群晖系统的，那么需要配置好虚拟机，包括设置CPU、内存、存储大小等等，以及有直通硬盘、直通核显、直通网卡、直通扩展卡、直通阵列卡等外设的，全部设置好，编译系统会自动检测虚拟机的硬件信息并且自动加载驱动进行编译；</strong><br><strong>※ 如果你有外网科学的环境能正常访问github网站和google网站的，那是最好的，可以减少编译等待的时间。要是没有也可以编译，只需要耐心等就是了。</strong></p>
+<p><strong>【编译步骤】</strong><br><strong>1. 到【GitHub】把编译引导需要用的文件下载到电脑上（不是在NAS这台机器）。GitHub上最新的版本是v0.5-alpha1（如果将来作者更新，可以下载最新的版本），我下载的img文件，这个格式是通用的，物理机可以用，虚拟机也可以用。</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3c8ce3a23.png"></p>
+<p><strong>2. 下载后解压IMG文件，如果你是用物理机安装的，可以使用rufus写盘工具或者其他写盘工具也就可以，把arpl.img刷到U盘启动，如果是PVE虚拟机安装群晖的，可以上传arpl.img到PVE，用qm importdisk命令转换成群晖虚拟机的虚拟引导文件。如果是用ESXI或者VMware安装的群晖虚拟机，可以使用下面的vmdk文件或者是StarWind V2V Image Converter工具来转换格式，进行引导安装，成功安装虚拟机有：Vmware、ESXi、PVE、UnRaid、VirtualBox、Parallels Desktop，未列出来的可能不支持，请自行测试。</strong><br><img src="https://www.imglt.org/i/2022/10/29/635d3cadc7215.png"></p>
+<p><strong>3. 以上步骤做完后，如果是虚拟机，就配置好后打开虚拟机的电源即可。物理机安装的话，把刷好的U盘放到NAS主机上，开机进BIOS设置从U盘启动。编译系统启动后会显示以下的界面，直接按回车进入。</strong><br><img src="https://www.imglt.org/i/2022/10/29/635d3cba7af91.png"></p>
+<p><strong>4. 编译系统启动中，如果你的路由器已经开启DHCP的话，此时系统会自动去获取IP地址，请耐心等待。</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3ce9eb3c2.png"></p>
+<p><strong>5. 当编译系统最下面一行显示有“root@”开头的时候，就表示已经启动好了，记下编译系统的IP地址。</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3cfb3276a.png"></p>
+<p><strong>6. 在同一局域网下，使用另外一台电脑的浏览器（建议使用谷歌浏览器），打开编译系统显示的IP地址和端口，会显示以下界面。</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3d09df105.png"><br><strong>7. 选择第一行“Choose a model”回车。</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3d19010b6.png"></p>
+<p><strong>8. 这时会显示出本机可编译黑群晖的型号，如果你的CPU比较老的话，有可能不会显示“DS918+”这个型号。</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3d22ae4d5.png"></p>
+<p><strong>9. 选择你想要编译的黑群晖型号，我这选择的是DS918+作为教程演示，用方向键选好以后按回车键。</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3d387a2ff.png"></p>
+<p><strong>10. 接下来在“Choose a Build Number”处回车。</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3d4229d75.png"></p>
+<p><strong>11. 选择你想要编译黑群晖的版本，我选择的是最新的7.1.1-42962版本，用方向键选择以后按回车键。</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3d4d21804.png"></p>
+<p><strong>12. 接下来在“Choose a serial number”处回车。</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3d5837e16.png"></p>
+<p><strong>13. 选择“Generate a random serial number”回车的话，编译系统会随机生成一个序列号。如果你想使用自定义的序列号，可以选择“Enter a serial number”回车后输入你想要使用的序列号。我这里使用随机生成。</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3d63e2b55.png"></p>
+<p><strong>14. 需要加载十代CPU核显驱动的，在“Addons”处回车。如果使用的CPU不是10代，此步骤跳过不做。</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3d6e0e0cd.png"></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3d7c3c161.png"></p>
+<p><strong>需要加载十代CPU核显驱动的，在“intel iGPU Drivers(10th Gen)”处回车。如果使用的CPU不是10代，此步骤跳过不做。</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3d9b631a0.png"></p>
+<p><strong>加载好驱动后，在“Exit”处回车返回上级菜单。</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3dad2f48c.png"></p>
+<p><strong>15. 在“Build the loader”处回车，开始编译。</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3dc28c73d.png"></p>
+<p><strong>16. 编译过程中，界面上会有进度条在跑进度，请耐心等待，等待的时间视你的网络环境而定（如果有外网科学的环境，请把此IP地址放到强制代{过}{滤}理名单，可以加快编译速度)。</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3dd0f37c6.png"></p>
+<p><strong>17. 引导编译完成后，系统会自动跳回这个界面，并且会多出一行菜单“Boot the loder”，在这行菜单上回车。</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3ddcadd1a.png"></p>
+<p><strong>18. 把NAS主机手动重启一次，编译好的引导就会自动启动，该项目编译出来的引导启动后显示的界面如下，会显示有：系统型号，系统版本，pid，vid，sn，mac等等。</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3ded912f8.png"></p>
+<p><strong>19. 在电脑上打开群晖助手，等待一段时间后，会搜索到DSM未安装的信息，IP地址、型号和版本与刚才编译的一致，这就对了。如果你的电脑搜索不出来的话，把电脑防火墙关掉后再试一下。</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3dfc3ec10.png"></p>
+<p><strong>20. 接下来就可以直接安装系统了，怎么样，是不是超级简单？后面的安装过程我就不演示了。</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3e0e1e01c.png"></p>
+<p><strong>【arpl编译好的引导，修改SN&#x2F;MAC方法】</strong></p>
+<p><strong>1. 把NAS重启一次，在启动菜单选第三行回车；</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3e1d88f06.png"></p>
+<p><strong>2. 在“Choose a serial number”处回车</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3e3a2addb.png"></p>
+<p><strong>3. 在“Enter a serial number”处回车；</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3e4ba75cc.png"></p>
+<p><strong>4. 入你想要使用的SN，输完了按一次回车；</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3e5b3f684.png"></p>
+<p><strong>5. 在“yes”处回车；这样MAC地址就改好了</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3e6b939fc.png"></p>
+<p><strong>6. 接下来修改MAC地址，在“Cmdline menu”处回车；</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3e7761fa1.png"></p>
+<p><strong>7. 在“Define a custom MAC”处回车；</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3e8662115.png"></p>
+<p><strong>8.输入你想要使用的mac地址，输完了按一次回车；</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3b3202006.png"></p>
+<p><strong>9. 当屏幕显示如下图的时候，把NAS重启一次；</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3af9370de.png"></p>
+<p><strong>10.重启NAS后，看到刚才修改的mac地址已经生效了，并且IP也会自动改变，不是之前的IP地址了，在浏览器打开新的地址和端口；</strong></p>
+<p><img src="https://www.imglt.org/i/2022/10/29/635d3eaa4708d.png"></p>
+<p><strong>Github项目地址</strong>：<a target="_blank" rel="noopener" href="https://github.com/fbelavenuto/arpl">https://github.com/fbelavenuto/arpl</a></p>
+<p><strong>蓝奏云：</strong><a target="_blank" rel="noopener" href="https://l13144.lanzoul.com/b00q9chfa">https://l13144.lanzoul.com/b00q9chfa</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <a target="_blank" class="social-link" href="https://t.me/chwl_h">
+            <span class="icon">
+              <i class="fab fa-telegram"></i>
+            </span>
+
+            <span class="label">Telegram</span>
+          </a>
+      </div>
+
+      <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/%E9%BB%91%E7%BE%A4%E6%99%96/" rel="tag"><i class="fa fa-tag"></i> 黑群晖</a>
+              <a href="/tags/%E5%9C%A8%E7%BA%BF%E7%BC%96%E8%AF%91/" rel="tag"><i class="fa fa-tag"></i> 在线编译</a>
+              <a href="/tags/DSM/" rel="tag"><i class="fa fa-tag"></i> DSM</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/post/3bf7.html" rel="prev" title="通过s3协议，把Oracle存储桶当图床用">
+                  <i class="fa fa-chevron-left"></i> 通过s3协议，把Oracle存储桶当图床用
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/post/easytier.html" rel="next" title="easytier的使用">
+                  easytier的使用 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="waline"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2021 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-balance-scale"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">村哥</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">21k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">19 分钟</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div><div>
+<!--添加网站运行时间-->
+<span>小破站已经在风雨中度过了</span>
+<span id="timeDate">载入天数...</span>
+<span id="times">载入时分秒...</span>
+<script>
+    function createtime() {
+        const startTime = '10/17/2021 00:12:55',
+            start = new Date(startTime)
+        let mill = new Date() - start,
+            seconds = Math.floor(mill / 1000),
+            mins = Math.floor(seconds / 60),
+            hours = Math.floor(mins / 60),
+            days = Math.floor(hours / 24)
+        const time = {
+            seconds: seconds - mins * 60,
+            mins: mins - hours * 60,
+            hours: hours - days * 24,
+        }
+        for (const k in time) {
+            time[k] = `${time[k]}`.padStart(2, '0')
+        }
+        document.getElementById("timeDate").innerHTML = ` ${days} 天`
+        document.getElementById("times").innerHTML = ` ${time.hours} 小时 ${time.mins} 分 ${time.seconds} 秒`
+    }
+    setInterval(createtime, 500)
+</script>
+</div>
+
+
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-cn","enable":true,"serverURL":"https://halo-waline.vercel.app/","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":true,"pageview":false,"placeholder":"来都来了，留下点东西再走吧","avatar":"mm","meta":["nick","mail","link"],"pageSize":10,"visitor":false,"comment_count":true,"requiredMeta":[],"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","el":"#waline","comment":true,"path":"/post/22bf.html"}</script>
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.waline.el).then(() =>
+    NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
+  ).then(() => 
+    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+  );
+});
+</script>
+
+</body>
+</html>

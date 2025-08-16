@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"halo.rsky.eu.org","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.13.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"width":300},"copycode":{"enable":true,"style":"mac","show_result":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="~~想必大家手里都或多或少有几个甲骨文云的账号~~，那么，除了免费的三台鸡，还能怎么充分利用甲骨文的其它免费服务呢？咱们今天把甲骨文免费的10G对象存储榨干x 我目前用PicGo作为日常使用的图床客户...">
+<meta property="og:type" content="article">
+<meta property="og:title" content="通过s3协议，把Oracle存储桶当图床用">
+<meta property="og:url" content="https://halo.rsky.eu.org/post/3bf7.html">
+<meta property="og:site_name" content="大漠孤烟">
+<meta property="og:description" content="~~想必大家手里都或多或少有几个甲骨文云的账号~~，那么，除了免费的三台鸡，还能怎么充分利用甲骨文的其它免费服务呢？咱们今天把甲骨文免费的10G对象存储榨干x 我目前用PicGo作为日常使用的图床客户...">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/1afff0c813c99bbddb9e3ee6a30ca14d.png">
+<meta property="og:image" content="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/632a98db7d068e0471de4869138afa36.png">
+<meta property="og:image" content="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/7b63c069993a567b24cd686eced9406f.png">
+<meta property="og:image" content="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/ed2b9d89a804b575734d7baaab185c0b.png">
+<meta property="og:image" content="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/2cac0fa236d2ba3d7acdcaed72330a9f.png">
+<meta property="og:image" content="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/b63fe428d89ca442c3e2fe27cf6108ed.png">
+<meta property="og:image" content="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/2350e901aaccdcdf9fb19f1ed81f7d5a.png">
+<meta property="og:image" content="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/31307023472beaa7fa19beaedb844290.png">
+<meta property="og:image" content="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/3bbb65c38a2133c2efe01d38031a7604.png">
+<meta property="og:image" content="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/e035eff2fb7af0485c7ac5e88a6acc46.png">
+<meta property="og:image" content="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/49a01481b4225fa4fdc0e2e69b49fdd2.png">
+<meta property="og:image" content="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/9cfe01532fd84826e04b3d6c14d4e78d.png">
+<meta property="og:image" content="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/0147fe846582f97fef6d28250fb62b35.png">
+<meta property="og:image" content="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/6fe3193ce5ed897bd8dd2435ce0f040c.png">
+<meta property="article:published_time" content="2022-11-02T15:40:14.000Z">
+<meta property="article:modified_time" content="2022-11-03T04:08:22.000Z">
+<meta property="article:author" content="村哥">
+<meta property="article:tag" content="S3">
+<meta property="article:tag" content="存储桶">
+<meta property="article:tag" content="Oracle">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/1afff0c813c99bbddb9e3ee6a30ca14d.png">
+
+
+<link rel="canonical" href="https://halo.rsky.eu.org/post/3bf7.html">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://halo.rsky.eu.org/post/3bf7.html","path":"post/3bf7.html","title":"通过s3协议，把Oracle存储桶当图床用"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>通过s3协议，把Oracle存储桶当图床用 | 大漠孤烟</title>
+  
+
+
+
+
+
+<link rel="dns-prefetch" href="https://halo-waline.vercel.app/"><!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/love.js"></script>
+<!-- 文章加密 -->
+<script>
+    (function(){
+        if(''){
+            if (prompt('请输入文章密码') !== ''){
+                alert('密码错误！');
+                history.back();
+            }
+        }
+    })();
+</script>
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="大漠孤烟" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">大漠孤烟</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">打工仔</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E5%AD%98%E5%82%A8%E6%A1%B6"><span class="nav-number">1.</span> <span class="nav-text">创建存储桶</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PicGo"><span class="nav-number">2.</span> <span class="nav-text">PicGo</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Qexo"><span class="nav-number">3.</span> <span class="nav-text">Qexo</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="村哥"
+      src="https://p.sda1.dev/8/c7fa9e05b1af70bfd08a0abe9b077947/yNID7wM5op.png">
+  <p class="site-author-name" itemprop="name">村哥</p>
+  <div class="site-description" itemprop="description">人生苦短，赶紧赚钱</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">40</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/chwl66" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;chwl66" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:teamy2233@gmail.com" title="E-Mail → mailto:teamy2233@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://instagram.com/baiqia1" title="Instagram → https:&#x2F;&#x2F;instagram.com&#x2F;baiqia1" rel="noopener" target="_blank"><i class="fab fa-instagram fa-fw"></i>Instagram</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://halo.rsky.eu.org/post/3bf7.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://p.sda1.dev/8/c7fa9e05b1af70bfd08a0abe9b077947/yNID7wM5op.png">
+      <meta itemprop="name" content="村哥">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="大漠孤烟">
+      <meta itemprop="description" content="人生苦短，赶紧赚钱">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="通过s3协议，把Oracle存储桶当图床用 | 大漠孤烟">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          通过s3协议，把Oracle存储桶当图床用
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-11-02 23:40:14" itemprop="dateCreated datePublished" datetime="2022-11-02T23:40:14+08:00">2022-11-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-11-03 12:08:22" itemprop="dateModified" datetime="2022-11-03T12:08:22+08:00">2022-11-03</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/MJJ/" itemprop="url" rel="index"><span itemprop="name">MJJ</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/post/3bf7.html#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/post/3bf7.html" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.6k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>1 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><del>想必大家手里都或多或少有几个甲骨文云的账号</del>，那么，除了免费的三台鸡，还能怎么充分利用甲骨文的其它免费服务呢？咱们今天把甲骨文免费的10G对象存储榨干x</p>
+<p>我目前用<a target="_blank" rel="noopener" href="https://github.com/Molunerfinn/PicGo">PicGo</a>作为日常使用的图床客户端，同时博客写作时还会用到<a target="_blank" rel="noopener" href="https://github.com/Qexo/Qexo">Qexo</a>，因此也配置了S3的上传。这篇文章就以这两个项目的S3协议配置作为例子，抛砖引玉讲讲如何把甲骨文云的对象存储当图床用。</p>
+<p>这篇文章的封面与所有配图均储存在甲骨文云对象存储中</p>
+<hr>
+<h2 id="创建存储桶"><a href="#创建存储桶" class="headerlink" title="创建存储桶"></a>创建存储桶</h2><p>无论我们想怎么连接到存储桶，首先我们需要先有一个，所以咱们先去创建一个甲骨文的对象存储，并准备好之后需要用到的信息。</p>
+<ol>
+<li>进入甲骨文控制台。首先点击<code>左上角-存储-存储桶</code></li>
+</ol>
+<p><img src="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/1afff0c813c99bbddb9e3ee6a30ca14d.png" alt="img"><br>2. 点击<code>创建存储桶</code>，给你的图床空间起一个好记的名字（其实无所谓x），然后点击<code>创建</code>，Oracle存储桶的免费空间有20G，理论上作为图床是足够用了吧</p>
+<p><img src="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/632a98db7d068e0471de4869138afa36.png" alt="img"><br>3. 存储桶建好了，接下来我们去记录一下<code>namespace</code>和<code>region</code>。首先点击右上角的用户图标，然后选择<code>租户:xxxxx</code></p>
+<p><img src="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/7b63c069993a567b24cd686eced9406f.png"><br>4. 进入租户详细信息页面后，在框出来的地方有一个<code>对象存储名称空间</code>，这个就是<code>namespace</code>了，把它记下来</p>
+<p><img src="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/ed2b9d89a804b575734d7baaab185c0b.png" alt="img"><br>5. 然后抬头看地址栏，<code>region=</code>后面的部分就是你的<code>region</code>了，把它也记下来</p>
+<p><img src="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/2cac0fa236d2ba3d7acdcaed72330a9f.png" alt="img"><br>6. 完成大半啦！接下来回到右上角，这次点击<code>我的概要信息</code>，英文界面的话是<code>User Settings</code></p>
+<p><img src="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/b63fe428d89ca442c3e2fe27cf6108ed.png" alt="img"></p>
+<ol start="7">
+<li>在左侧找到<code>资源</code>-<code>客户密钥</code>，英文下是<code>Customer secret keys</code></li>
+</ol>
+<p><img src="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/2350e901aaccdcdf9fb19f1ed81f7d5a.png" alt="img"><br>8. 点击生成密钥，起一个名字</p>
+<p><a target="_blank" rel="noopener" href="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/31307023472beaa7fa19beaedb844290.png"><img src="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/31307023472beaa7fa19beaedb844290.png" alt="img"></a><br>9. 把生成的密钥复制下来记好，这个只会显示一次，别弄丢了</p>
+<p><img src="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/3bbb65c38a2133c2efe01d38031a7604.png" alt="img"><br>10. 于是我们就能在列表里看到密钥了，鼠标放在访问密钥上会显示完整内容</p>
+<p><img src="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/e035eff2fb7af0485c7ac5e88a6acc46.png" alt="img"></p>
+<p>到这里，我们就已经完成了甲骨文的配置啦！<br>接下来把它和我们的图床项目对接吧——</p>
+<hr>
+<h2 id="PicGo"><a href="#PicGo" class="headerlink" title="PicGo"></a>PicGo</h2><ol>
+<li><p>安装好PicGo后，在<code>插件设置</code>中搜索<code>s3</code>并安装s3协议插件。</p>
+<p><img src="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/49a01481b4225fa4fdc0e2e69b49fdd2.png" alt="我用的是框里的这个，第一个没试，应该也行？"></p>
+<p>我用的是框里的这个，第一个没试，应该也行？</p>
+</li>
+<li><p>点击<code>图床设置-AmazonS3</code>，我们会看到很多很多需要填写的东西</p>
+</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/9cfe01532fd84826e04b3d6c14d4e78d.png"><img src="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/9cfe01532fd84826e04b3d6c14d4e78d.png" alt="img"></a><br>3. 首先看<code>应用密钥ID</code>和<code>密钥</code>，密钥ID是刚才最后一步在列表中看到的那一串字符；密钥是倒数第二步中<strong>只显示一次</strong>的那一串字符。把它们俩分别拷贝进输入框中<br>4. 然后是<code>桶</code>，这里填甲骨文对象存储桶的名字，也就是第2步中创建的名称。如果忘记的话，可以在左上角<a target="_blank" rel="noopener" href="https://cloud.oracle.com/object-storage/buckets">存储-存储桶</a>中的列表里找到。<br>5. 接下来是<code>文件路径</code>，这里的参数决定了你的图片会被上传到什么目录下。有一些变量可以用，比如<strong>想存到<code>年/月</code>目录下并以<code>md5</code>命名</strong>的话，就可以填写<code>&#123;year&#125;/&#123;month&#125;/&#123;md5&#125;.&#123;extName&#125;</code>，最后一个参数是扩展名，这里抛砖引玉，各位按需填写<br>6. 权限填<code>public-read</code>就可以了，公开可读<br>7. 地区暂时不填，咱们在下面填参数<br>8. 自定义节点，这里填得麻烦一点点</p>
+<p>自定义节点</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://[namespace].compat.objectstorage.[region].oraclecloud.com/</span><br></pre></td></tr></table></figure>
+
+<p>不要照抄，这里两个中括号中的内容是需要替换的，<code>namespace</code>和<code>region</code>想必大家还有印象，就是上面第三步中找到的两串字符，把它们替换进去</p>
+<p>9.自定义域名，这里同样需要有需要替换的部分。<code>region</code>和<code>namespace</code>和上面一样，<code>bucketname</code>是桶名，第1步里那一个</p>
+<p>自定义域名</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://objectstorage.[region].oraclecloud.com/n/[namespace]]/b/[bucketname]/o</span><br></pre></td></tr></table></figure>
+
+<ol start="10">
+<li>点击确认，现在可以去上传区试着上传一张图片看看啦~</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/0147fe846582f97fef6d28250fb62b35.png"><img src="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/0147fe846582f97fef6d28250fb62b35.png" alt="img"></a></p>
+<hr>
+<h2 id="Qexo"><a href="#Qexo" class="headerlink" title="Qexo"></a>Qexo</h2><p>搭建好Qexo后，在设置中找到<code>图床配置</code>，<code>图床类型</code>选择S3协议后，便能看到相关的配置项了<br><a target="_blank" rel="noopener" href="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/6fe3193ce5ed897bd8dd2435ce0f040c.png"><img src="https://objectstorage.ap-tokyo-1.oraclecloud.com/n/nrij9siyrqif/b/bucket-20220219-2216/o/2022/04/6fe3193ce5ed897bd8dd2435ce0f040c.png" alt="img"></a><br>这里的各项可以参考上面PicGo的配置，大同小异对应填好后提交保存就可以啦——</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <a target="_blank" class="social-link" href="https://t.me/chwl_h">
+            <span class="icon">
+              <i class="fab fa-telegram"></i>
+            </span>
+
+            <span class="label">Telegram</span>
+          </a>
+      </div>
+
+      <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/S3/" rel="tag"><i class="fa fa-tag"></i> S3</a>
+              <a href="/tags/%E5%AD%98%E5%82%A8%E6%A1%B6/" rel="tag"><i class="fa fa-tag"></i> 存储桶</a>
+              <a href="/tags/Oracle/" rel="tag"><i class="fa fa-tag"></i> Oracle</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/post/5637.html" rel="prev" title="青龙面板使用扩展聚看点">
+                  <i class="fa fa-chevron-left"></i> 青龙面板使用扩展聚看点
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/post/22bf.html" rel="next" title="[Windows] 安装黑群晖不求人，arpl在线编译安装群晖教程">
+                  [Windows] 安装黑群晖不求人，arpl在线编译安装群晖教程 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="waline"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2021 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-balance-scale"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">村哥</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">21k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">19 分钟</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div><div>
+<!--添加网站运行时间-->
+<span>小破站已经在风雨中度过了</span>
+<span id="timeDate">载入天数...</span>
+<span id="times">载入时分秒...</span>
+<script>
+    function createtime() {
+        const startTime = '10/17/2021 00:12:55',
+            start = new Date(startTime)
+        let mill = new Date() - start,
+            seconds = Math.floor(mill / 1000),
+            mins = Math.floor(seconds / 60),
+            hours = Math.floor(mins / 60),
+            days = Math.floor(hours / 24)
+        const time = {
+            seconds: seconds - mins * 60,
+            mins: mins - hours * 60,
+            hours: hours - days * 24,
+        }
+        for (const k in time) {
+            time[k] = `${time[k]}`.padStart(2, '0')
+        }
+        document.getElementById("timeDate").innerHTML = ` ${days} 天`
+        document.getElementById("times").innerHTML = ` ${time.hours} 小时 ${time.mins} 分 ${time.seconds} 秒`
+    }
+    setInterval(createtime, 500)
+</script>
+</div>
+
+
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-cn","enable":true,"serverURL":"https://halo-waline.vercel.app/","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":true,"pageview":false,"placeholder":"来都来了，留下点东西再走吧","avatar":"mm","meta":["nick","mail","link"],"pageSize":10,"visitor":false,"comment_count":true,"requiredMeta":[],"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","el":"#waline","comment":true,"path":"/post/3bf7.html"}</script>
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.waline.el).then(() =>
+    NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
+  ).then(() => 
+    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+  );
+});
+</script>
+
+</body>
+</html>
